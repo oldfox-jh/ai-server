@@ -1,12 +1,27 @@
 from fastapi import FastAPI
-from routers import chats
+from contextlib import asynccontextmanager
+from dotenv import load_dotenv
+import os
+
+from routers import chatbots
 from routers import rags
-app = FastAPI()
+
+# 서버시작과 종료시 할일 처리
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 환경설정 로딩
+    load_dotenv()
+    yield
+
+# FastAPI 서버 실행
+app = FastAPI(lifespan=lifespan)
 
 # 라우터 등록
-app.include_router(chats.router)
+app.include_router(chatbots.router)
 app.include_router(rags.router)
+
+
 
 @app.get("/")
 def read_root():
-    return {"message": "Hello World"}
+    return {"chat_url":  os.getenv("CHAT_BASE_URL")}
