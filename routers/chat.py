@@ -1,8 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, File, UploadFile, Depends
 import os
 from openai import OpenAI
 from typing import cast, Any
-from fastapi import File, UploadFile, Depends
 from fastapi.responses import JSONResponse
 from datetime import datetime
 from pathlib import Path

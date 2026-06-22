@@ -8,5 +8,7 @@ services:
       - "8000:8000"
     volumes:
       - .:/app
+      # 파일 폴더(이미지나 기타 데이터 저장소)
+      #-
     working_dir: /app
     command: uvicorn server:app --host 0.0.0.0 --port 8000 --reload
