@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 import db.chatbots as chatbot
 from entity.chatbot import ChatbotRequest
-from entity.common_response import CommonApiResponse
 
 router = APIRouter(
     prefix="/chatbots",
@@ -31,4 +30,18 @@ async def read_items_with_condition():
 """
 @router.post("/create")
 async def create(data: ChatbotRequest):
+    return chatbot.create_chatbot_model(data)
+
+"""
+    챗봇 모델 수정
+"""
+@router.post("/update")
+async def update(data: ChatbotRequest):
+    return chatbot.create_chatbot_model(data)
+
+"""
+    챗봇 모델 삭제
+"""
+@router.post("/delete")
+async def delete(data: ChatbotRequest):
     return chatbot.create_chatbot_model(data)

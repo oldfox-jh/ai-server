@@ -1,20 +1,21 @@
 import psycopg2
 import db.common as common
+from entity.chat import ChatRequest
 
 from entity.chatbot import ChatbotRequest
 from entity.common_response import CommonApiResponse
 
 """
-    챗봇 모델 목록
+    챗봇 모델 목록 조건 없음
 """
-def list_chatbot_model() -> str | None:
+def list_chatbot_model() :
     conn = None
     cursor = None
     results = None
     try:
         conn = common.get_chatbot_db_connection()
         cursor = conn.cursor()
-        query = f"SELECT * from fn.list_chatbot('', '', '', '');"
+        query = f"SELECT * from fn.list_chatbot(null, '', '', '', '');"
         cursor.execute(query)
 
         # 1. 컬럼명 추출
@@ -30,10 +31,38 @@ def list_chatbot_model() -> str | None:
         cursor.close()
         conn.close()
 
-        # 결과 확인
-        print(results)
-
     return results
+
+"""
+    챗봇 모델 정보
+"""
+def chatbot_model(data:ChatRequest):
+    conn = None
+    cursor = None
+    results = None
+    try:
+        conn = common.get_chatbot_db_connection()
+        cursor = conn.cursor()
+        query = " select * from fn.list_chatbot('%s'::uuid, '', '', '', '');" % data.chatbot_uuid
+        params = (
+            data.chatbot_uuid
+        )
+        cursor.execute(query, params)
+
+        # 1. 컬럼명 추출
+        columns = [desc[0] for desc in cursor.description]
+
+        # 2. 데이터를 딕셔너리 리스트로 변환
+        results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+    except Exception as e:
+        print(f"Error inserting data: {e}")
+        conn.rollback()
+    finally:
+        cursor.close()
+        conn.close()
+
+    return None if (results is None or len(results) == 0)  else  results[0]
 
 """
     챗봇 모델 정보 등록

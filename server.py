@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 import os
 
+from routers import chat
 from routers import chatbots
 from routers import rags
 
@@ -17,6 +18,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 # 라우터 등록
+app.include_router(chat.router)
 app.include_router(chatbots.router)
 app.include_router(rags.router)
 
@@ -25,3 +27,9 @@ app.include_router(rags.router)
 @app.get("/")
 def read_root():
     return {"chat_url":  os.getenv("CHAT_BASE_URL")}
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)

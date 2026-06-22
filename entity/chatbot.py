@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 
 class ChatbotRequest(BaseModel):
+    chatbot_uuid: str = Field(None, description="챗봇 모델 관리 번호")
     chatbot_name:str = Field(..., description="챗봇의 이름 (필수)")
     description:str = Field(None, description="챗봇에 대한 설명 (필수)")
     model_provider:str = Field(..., description="모델 제공 기업 (필수)")

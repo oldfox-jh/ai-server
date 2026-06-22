@@ -6,6 +6,6 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.get("/")
-async def read_items():
+@router.get("/register")
+async def register_document():
     return {"op": "rag"}
