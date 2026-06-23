@@ -4,6 +4,8 @@ from fastapi.responses import JSONResponse
 from datetime import datetime
 from pathlib import Path
 from entity.rag import RagRequest
+from util.ocr.pdf_process import DoclingProcess
+from util.ocr.image_process import VLMProcess
 
 router = APIRouter(
     prefix="/rags",
@@ -51,14 +53,19 @@ async def register_document(data: RagRequest= Depends(), file: UploadFile | None
 
 @router.post("/register")
 async def register_document(data: RagRequest= Depends(), file: UploadFile | None = File(None)):
+    str_result = ""
+
     # file이 있을 경우 처리
     if file:
         try:
             # 파일 저장
             date_string = datetime.now().strftime("%Y%m%d")
-
-            file_location = os.path.join(os.getenv("UPLOAD_FOLDER"), date_string, file.filename)
-            folder_path = Path(os.path.join(os.getenv("UPLOAD_FOLDER"), date_string))
+            if os.getenv("DEBUG"):
+                file_location = os.path.join(os.getenv("DEBUG_UPLOAD_FOLDER"), date_string, file.filename)
+                folder_path = Path(os.path.join(os.getenv("DEBUG_UPLOAD_FOLDER"), date_string))
+            else:
+                file_location = os.path.join(os.getenv("UPLOAD_FOLDER"), date_string, file.filename)
+                folder_path = Path(os.path.join(os.getenv("UPLOAD_FOLDER"), date_string))
 
             # 폴더가 없으면 생성 (exist_ok=True는 이미 폴더가 있어도 에러를 내지 않는 옵션)
             folder_path.mkdir(parents=True, exist_ok=True)
@@ -73,9 +80,23 @@ async def register_document(data: RagRequest= Depends(), file: UploadFile | None
                 "size": file_size,
                 "content_type": file.content_type,
             }
+
+            # 파일에서 텍스트 추출
+            process = None
+            if Path(file_location).suffix.lower() == ".pdf":
+                process = DoclingProcess()
+            elif Path(file_location).suffix.lower() == ".png" or Path(file_location).suffix.lower() == ".jpg" or Path(file_location).suffix.lower() == ".jpeg":
+                process = VLMProcess()
+
+            # text-chunk
+            if process:
+                str_result = process.start(file_location)
+
+
+
             # 파일 정보 db에 추가..
 
         except Exception as e:
             return JSONResponse(content={"message": f"파일 업로드 중 오류 발생: {e}"}, status_code=500)
 
-    return {"op": "rag"}
+    return {"text": str_result}
