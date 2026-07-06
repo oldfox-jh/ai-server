@@ -9,6 +9,7 @@ from routers import chatbots
 from routers import rags
 
 from util.rag.tokenizer_service import TokenizerService
+from util.rag.embedding_service import EmbeddingService
 
 # 서버시작과 종료시 할일 처리
 @asynccontextmanager
@@ -18,6 +19,9 @@ async def lifespan(app: FastAPI):
 
     # 토크나이저 초기화
     TokenizerService()
+
+    # 임베더 초기화
+    EmbeddingService()
 
     yield
 
@@ -42,6 +46,7 @@ app.include_router(rags.router)
 
 @app.get("/")
 def read_root():
+    vector_list = EmbeddingService().embedding("8.2 문서 정보 테이블 생성")
     return {"chat_url":  os.getenv("CHAT_BASE_URL")}
 
 
